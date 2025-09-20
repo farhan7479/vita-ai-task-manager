@@ -20,6 +20,8 @@ export class TaskController {
    * Returns top 4 recommended tasks based on user metrics
    */
   public getRecommendations = (req: Request, res: Response): void => {
+    logEndpoint('GET_RECOMMENDATIONS', { body: req.body });
+    
     try {
       const { metrics, currentTime, localDate } = req.body as {
         metrics: UserMetrics;
@@ -29,6 +31,7 @@ export class TaskController {
 
       // Validate required fields
       if (!metrics || !this.isValidMetrics(metrics)) {
+        logWarning('Invalid metrics provided in recommendations request', { metrics });
         res.status(400).json({
           error: 'Invalid metrics provided. Required: water_ml, steps, sleep_hours, screen_time_min, mood_1to5'
         });
@@ -40,6 +43,13 @@ export class TaskController {
       const requestTime = currentTime || now.toISOString();
       const requestDate = localDate || now.toISOString().split('T')[0];
 
+      logger.info('🧮 PROCESSING RECOMMENDATIONS', {
+        metrics,
+        currentTime: requestTime,
+        localDate: requestDate,
+        timestamp: now.toISOString()
+      });
+
       const request: RecommendationRequest = {
         metrics,
         currentTime: requestTime,
@@ -47,8 +57,14 @@ export class TaskController {
       };
 
       const recommendations = this.taskManager.getRecommendations(request);
+      
+      logger.info('✨ RECOMMENDATIONS GENERATED', {
+        taskCount: recommendations.length,
+        topTask: recommendations[0] ? recommendations[0].task.id : 'none',
+        scores: recommendations.map(r => ({ id: r.task.id, score: r.score }))
+      });
 
-      res.json({
+      const response = {
         tasks: recommendations.map(scored => ({
           id: scored.task.id,
           title: scored.task.title,
@@ -66,9 +82,16 @@ export class TaskController {
         })),
         timestamp: requestTime,
         localDate: requestDate
+      };
+
+      logSuccess('RECOMMENDATIONS_RETURNED', {
+        taskCount: response.tasks.length,
+        timestamp: requestTime
       });
+
+      res.json(response);
     } catch (error) {
-      console.error('Error in getRecommendations:', error);
+      logError(error as Error, { endpoint: 'getRecommendations', body: req.body });
       res.status(500).json({ error: 'Internal server error' });
     }
   };
@@ -78,16 +101,20 @@ export class TaskController {
    * Mark a task as completed
    */
   public completeTask = (req: Request, res: Response): void => {
+    logEndpoint('COMPLETE_TASK', { body: req.body });
+    
     try {
       const { taskId, timestamp } = req.body as ActionRequest;
 
       if (!taskId) {
+        logWarning('Complete task request missing taskId');
         res.status(400).json({ error: 'taskId is required' });
         return;
       }
 
       const task = this.taskManager.getTask(taskId);
       if (!task) {
+        logWarning('Attempted to complete non-existent task', { taskId });
         res.status(404).json({ error: 'Task not found' });
         return;
       }
@@ -96,22 +123,38 @@ export class TaskController {
         ? new Date(timestamp).toISOString().split('T')[0]
         : new Date().toISOString().split('T')[0];
 
+      logger.info('✅ COMPLETING TASK', {
+        taskId,
+        taskTitle: task.title,
+        currentDate,
+        timestamp: new Date().toISOString()
+      });
+
       const success = this.taskManager.completeTask(taskId, currentDate);
 
       if (success) {
+        const completedTask = this.taskManager.getTask(taskId);
+        
+        logSuccess('TASK_COMPLETED', {
+          taskId,
+          taskTitle: task.title,
+          completedDate: currentDate
+        });
+        
         res.json({
           success: true,
           message: `Task ${taskId} marked as completed`,
-          task: this.taskManager.getTask(taskId)
+          task: completedTask
         });
       } else {
+        logError(new Error('Failed to complete task'), { taskId });
         res.status(500).json({
           success: false,
           message: 'Failed to complete task'
         });
       }
     } catch (error) {
-      console.error('Error in completeTask:', error);
+      logError(error as Error, { endpoint: 'completeTask', body: req.body });
       res.status(500).json({ error: 'Internal server error' });
     }
   };
@@ -121,16 +164,20 @@ export class TaskController {
    * Mark a task as dismissed/ignored
    */
   public dismissTask = (req: Request, res: Response): void => {
+    logEndpoint('DISMISS_TASK', { body: req.body });
+    
     try {
       const { taskId, timestamp } = req.body as ActionRequest;
 
       if (!taskId) {
+        logWarning('Dismiss task request missing taskId');
         res.status(400).json({ error: 'taskId is required' });
         return;
       }
 
       const task = this.taskManager.getTask(taskId);
       if (!task) {
+        logWarning('Attempted to dismiss non-existent task', { taskId });
         res.status(404).json({ error: 'Task not found' });
         return;
       }
@@ -139,23 +186,54 @@ export class TaskController {
         ? new Date(timestamp).toISOString().split('T')[0]
         : new Date().toISOString().split('T')[0];
 
+      const previousIgnores = task.ignores;
+      
+      logger.info('❌ DISMISSING TASK', {
+        taskId,
+        taskTitle: task.title,
+        currentIgnores: previousIgnores,
+        currentDate,
+        hasMicroAlt: !!task.micro_alt,
+        microAltId: task.micro_alt,
+        timestamp: new Date().toISOString()
+      });
+
       const success = this.taskManager.dismissTask(taskId, currentDate);
 
       if (success) {
         const updatedTask = this.taskManager.getTask(taskId);
+        const newIgnores = updatedTask?.ignores || 0;
+        
+        // Check if substitution threshold reached
+        if (newIgnores >= 3 && task.micro_alt) {
+          logger.warn('🔄 SUBSTITUTION THRESHOLD REACHED', {
+            taskId,
+            ignores: newIgnores,
+            willSubstituteWith: task.micro_alt
+          });
+        }
+        
+        logSuccess('TASK_DISMISSED', {
+          taskId,
+          taskTitle: task.title,
+          ignores: newIgnores,
+          dismissDate: currentDate
+        });
+        
         res.json({
           success: true,
-          message: `Task ${taskId} dismissed (ignores: ${updatedTask?.ignores || 0})`,
+          message: `Task ${taskId} dismissed (ignores: ${newIgnores})`,
           task: updatedTask
         });
       } else {
+        logError(new Error('Failed to dismiss task'), { taskId });
         res.status(500).json({
           success: false,
           message: 'Failed to dismiss task'
         });
       }
     } catch (error) {
-      console.error('Error in dismissTask:', error);
+      logError(error as Error, { endpoint: 'dismissTask', body: req.body });
       res.status(500).json({ error: 'Internal server error' });
     }
   };
@@ -165,11 +243,20 @@ export class TaskController {
    * Load seed data into the system
    */
   public loadSeedData = (req: Request, res: Response): void => {
+    logEndpoint('LOAD_SEED_DATA');
+    
     try {
+      logger.info('🌱 LOADING SEED DATA');
+      
       this.taskManager.clearAllTasks();
       this.taskManager.loadSeedData();
 
       const allTasks = this.taskManager.getAllTasks();
+      
+      logSuccess('SEED_DATA_LOADED', {
+        taskCount: allTasks.length,
+        taskIds: allTasks.map(t => t.id)
+      });
       
       res.json({
         success: true,
@@ -177,7 +264,7 @@ export class TaskController {
         tasks: allTasks
       });
     } catch (error) {
-      console.error('Error in loadSeedData:', error);
+      logError(error as Error, { endpoint: 'loadSeedData' });
       res.status(500).json({ error: 'Internal server error' });
     }
   };

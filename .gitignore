@@ -1,0 +1,326 @@
+# Vita AI Task Manager - .gitignore
+
+# ==============================================
+# Dependencies
+# ==============================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# ==============================================
+# Build outputs
+# ==============================================
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# ==============================================
+# Logs
+# ==============================================
+logs/
+*.log
+server.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# ==============================================
+# Environment variables
+# ==============================================
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
+
+# ==============================================
+# IDE and Editor files
+# ==============================================
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains IDEs
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ==============================================
+# Operating System files
+# ==============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ==============================================
+# Testing
+# ==============================================
+coverage/
+*.lcov
+.nyc_output
+.coverage/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Jest
+jest_*
+
+# ==============================================
+# Temporary files
+# ==============================================
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# ==============================================
+# Database files
+# ==============================================
+*.sqlite
+*.sqlite3
+*.db
+
+# ==============================================
+# Package manager files
+# ==============================================
+# npm
+package-lock.json  # Remove this line if you want to track package-lock.json
+.npm
+
+# Yarn
+yarn.lock  # Remove this line if you want to track yarn.lock
+.yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# pnpm
+pnpm-lock.yaml  # Remove this line if you want to track pnpm-lock.yaml
+
+# ==============================================
+# Runtime and process files
+# ==============================================
+.pid
+.seed
+.pid.lock
+.lock-wscript
+
+# ==============================================
+# Optional directories
+# ==============================================
+# ESLint cache
+.eslintcache
+
+# Prettier cache
+.prettier-cache
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# ==============================================
+# Serverless directories
+# ==============================================
+.serverless/
+
+# ==============================================
+# Cloud deployment files
+# ==============================================
+.vercel
+.netlify
+
+# ==============================================
+# Docker
+# ==============================================
+Dockerfile.dev
+docker-compose.override.yml
+
+# ==============================================
+# Security and secrets
+# ==============================================
+.env.keys
+*.pem
+*.p12
+*.key
+*.crt
+*.cert
+secrets/
+.secrets/
+
+# ==============================================
+# Project specific
+# ==============================================
+# Debug files
+debug/
+debug.log
+
+# Backup files
+*.bak
+*.backup
+
+# Archive files
+*.zip
+*.tar
+*.tar.gz
+*.rar
+
+# ==============================================
+# Optional: Uncomment if using specific tools
+# ==============================================
+# PM2
+# .pm2/
+
+# Grunt intermediate storage
+# .grunt
+
+# Bower dependency directory
+# bower_components
+
+# Lock files (uncomment the ones you want to track)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# ==============================================
+# Keep these files/directories
+# ==============================================
+!.gitkeep
+!.env.example
+!logs/.gitkeep
